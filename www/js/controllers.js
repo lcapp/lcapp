@@ -78,10 +78,13 @@ angular.module('app.controllers', [])
     // get API key for channel search
     $rootScope.getSearchKey = (function() {
         var keys = [ "AIzaSyAkedClIJENM-lKk5Hwziprb_E9G5bKopc", "AIzaSyDdck0LEAXOCBVKDpN4ZgxC0Gk6zBedOTM", "AIzaSyBiwDi5co4t3Fopz9oEcfoisthYZz_kivM", "AIzaSyAm3hJqTq1L1wcz-cz_4zLUNs2PD37hLuY", "AIzaSyC_oqi_gbXaI29dkJJMRs0a82OWcl-h3tU" ];
-        index = Math.round(Math.random() * 5);
-        return function() {
-            index %= 5;
-            return keys[index++];
+        var index = Math.floor(new Date().getTime() / 1728e4) % 5;
+        //var index = 0;
+        return function(getNewKey) {
+            if (getNewKey)
+                index = (index + 1) % 5;
+            else
+                return keys[index];
         }
     })();
     
@@ -89,15 +92,12 @@ angular.module('app.controllers', [])
     $rootScope.getSubKey = (function() {
         var keys = [ "AIzaSyCRtJ2uhgYe7p3J-QkC6kHsm7KZz0bDIok", "AIzaSyCo-PwQAtlrchgSAY0hLnE2HYSRhqdsPXk", "AIzaSyC7asPTom1oZVPmZu7UcttGNFvqzRWQiRM", "AIzaSyDmUVXdKMQfp1428NsX0GuBHEp3Hh6VnRQ", "AIzaSyB0uq8HHarCnpYG4pZxYPwE8wLAtM_gBN0", "AIzaSyCgp_Uc2jj1mAd7HW9AzAATt33rGkvttVQ", "AIzaSyDUUfmvtaHY3lQ11CbkF8gplSJSXwgLe2g", "AIzaSyDzUqDdCGrb5g5YU0fo0pB9QbqurkK3GSc", "AIzaSyBgcyeGD9VK-Nu2pnlP5VQaLWqYSIPWZRk", "AIzaSyAGry7aVXPytGcqt-GrOb4HkIXVGbuL4As", "AIzaSyAiWjUpPAvVy1fLj2VTJitH56Gs-2PBMLY", "AIzaSyA2bieaAnufzw9YNibt0R2WI14L8uU9tbw", "AIzaSyDpTfaINBOTi_1YgYSmk25DPS8ex-duZsQ", "AIzaSyAGFMcByfMdsbQbpK7FE8MfHLZNjMDIWsw", "AIzaSyCLuua085lVPXp0Jmqb_AIePC0hG66N_5U", "AIzaSyDGu5pdf-_0cNIZdNkcLKtdpn0UNulX7hU", "AIzaSyDY8suw3_q3zMX6ZDhdr7IDpPLQ6CbEsoY", "AIzaSyCE9cyVSRDrn0nCjO_ajRDSHXUr3yqLnT0", "AIzaSyACVbv1wiiFdYQsaMQkthBJAUi-Ek-ZNkc", "AIzaSyANLBp5fHf-XEsQnksu_-ygJMHviGQO7TY", "AIzaSyCQXeXdjhu5SKnvLJeYz9SgyKbzT8fnQko", "AIzaSyBlSrOJ-ajuFM4cRpbPbuBnI1Fn3BPFrbg", "AIzaSyC9jt3y7ygY5qTToSUEanHCyMYonkCXz1w", "AIzaSyA5dmZA8HwtRCI24FDlf4E0atZ5KjYxzWA", "AIzaSyBBjLqNnzhnJ5xqRGwfdCmIVG13YNNNk2w", "AIzaSyACZdXbrIijp3kLgAGNIdSCe7uxxIvo9wY", "AIzaSyBKDw28djiaVr2rFLUUHEO2gNoa4SBa5Eo" ];
         var index = Math.floor(new Date().getTime() / 32e5) % 27;
+        //var index = 0;
         return function(getNewKey) {
             if (getNewKey)
-            {
                 index = (index + 1) % 27;
-            }
             else
-            {
                 return keys[index];
-            }
         }
     })();
     
@@ -117,9 +117,16 @@ angular.module('app.controllers', [])
         }).then(function(response) {
             //console.log(response);
             callback(response.data.items[0].statistics.subscriberCount);
-        }, function(response) {
-            $rootScope.getSubKey(true);
-            $rootScope.getSubCount(t, callback);
+        }, function(error) {
+            //console.log(response);
+            if (error.status == 403)
+            {
+                // API quota exceeded
+                $rootScope.getSubKey(true);
+                $rootScope.getSubCount(t, callback);
+            }
+            else
+                $rootScope.showMessage("Error: no Internet connection");
         });
     }
 	
@@ -145,7 +152,8 @@ angular.module('app.controllers', [])
                     reject(new Error("channel not found"));
                 }
             }, function(error) {
-                reject(new Error("there's something wrong with the YouTube Data API"));
+                //reject(new Error("there's something wrong with the YouTube Data API"));
+                reject(error);
             });
         });
     }
@@ -244,30 +252,59 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     
     //console.log("controller running");
     
-    // get initial channel from URL
-    $rootScope.$on("initialChannel", function(event, args) {
-        $rootScope.getNameAndIcon(args.channelId).then(function(channel) {
+    $scope.loadChannel = function(id) {
+        $rootScope.getNameAndIcon(id).then(function(channel) {
             $scope.currChannel = channel;
             //console.log(channel);
             update($scope.currChannel.channelId);
+        }, function(err) {
+            if (err.status == 403)
+            {
+                $rootScope.getSearchKey(true);
+                $scope.loadChannel(id);
+            }
+            else
+                //callback(false);
+                $rootScope.showMessage("Error: no Internet connection");
         });
+    }
+    
+    // load front page channel
+    $scope.loadFrontPageChannel = function() {
+        getFeatured().then(function(res) {
+            $scope.currChannel = $scope.featChannel = res;
+        }).then(function() {
+            //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
+            update($scope.currChannel.channelId);
+        }).catch(function(err) {
+            if (err.status == 404)
+            {
+                $scope.currChannel = {
+                    channelTitle: "PsychoSoprano",
+                    channelId: "UCR-QYzXrZF8yFarK8wZbHog",
+                    thumbnail: "https://yt3.ggpht.com/-5nmY1TTxeVQ/AAAAAAAAAAI/AAAAAAAAAAA/PberiphHWm4/s88-c-k-no-mo-rj-c0xffffff/photo.jpg"
+                }
+            }
+            else if (err.status == 403)
+            {
+                $rootScope.getSearchKey(true);
+                $scope.loadFrontPageChannel();
+            }
+            else
+                //callback(false);
+                $rootScope.showMessage("Error: no Internet connection");
+        });
+    }
+    
+    // get initial channel from URL
+    $rootScope.$on("initialChannel", function(event, args) {
+        $scope.loadChannel(args.channelId);
     });
     
     // get front page channel
     if (!$scope.currChannel)
     {
-        getFeatured().then(function(res) {
-            $scope.currChannel = $scope.featChannel = res;
-        }).catch(function(err) {
-            $scope.currChannel = {
-                channelTitle: "PsychoSoprano",
-                channelId: "UCR-QYzXrZF8yFarK8wZbHog",
-                thumbnail: "https://yt3.ggpht.com/-5nmY1TTxeVQ/AAAAAAAAAAI/AAAAAAAAAAA/PberiphHWm4/s88-c-k-no-mo-rj-c0xffffff/photo.jpg"
-            }
-        }).then(function() {
-            //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
-            update($scope.currChannel.channelId);
-        });
+        $scope.loadFrontPageChannel();
     }
     /*if (window.localStorage.getItem("initialChannel"))
     {
@@ -316,6 +353,14 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                     $rootScope.getNameAndIcon(data.results.meta[0].content).then(function(channel) {
                         $rootScope.goToChannel(channel);
                         callback(true);
+                    }, function(error) {
+                        if (error.status == 403)
+                        {
+                            $rootScope.getSearchKey(true);
+                            $scope.searchChannel(t, callback);
+                        }
+                        else
+                            callback(false);
                     });
                 }
             });
@@ -327,6 +372,14 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
             $rootScope.getNameAndIcon(t).then(function(channel) {
                 $rootScope.goToChannel(channel);
                 callback(true);
+            }, function(error) {
+                if (error.status == 403)
+                {
+                    $rootScope.getSearchKey(true);
+                    $scope.searchChannel(t, callback);
+                }
+                else
+                    callback(false);
             });
         }
         else
@@ -346,6 +399,15 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 }
                 else
                     callback(false);
+            }, function(error) {
+                if (error.status == 403)
+                {
+                    $rootScope.getSearchKey(true);
+                    $scope.searchChannel(t, callback);
+                }
+                else
+                    //callback(false);
+                    $rootScope.showMessage("Error: no Internet connection");
             });
         }    
     }
@@ -528,6 +590,15 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                     $rootScope.getNameAndIcon(data.results.meta[0].content).then(function(channel) {
                         $rootScope.goToChannel(channel);
                         $scope.modal.hide();
+                    }, function(error) {
+                        if (error.status == 403)
+                        {
+                            $rootScope.getSearchKey(true);
+                            $scope.search(t);
+                        }
+                        else
+                            //callback(false);
+                            $rootScope.showMessage("Error: no Internet connection");
                     });
                 }
             });
@@ -539,6 +610,15 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
             $rootScope.getNameAndIcon(t).then(function(channel) {
                 $rootScope.goToChannel(channel);
                 $scope.modal.hide();
+            }, function(error) {
+                if (error.status == 403)
+                {
+                    $rootScope.getSearchKey(true);
+                    $scope.search(t);
+                }
+                else
+                    //callback(false);
+                    $rootScope.showMessage("Error: no Internet connection");
             });
         }
         else
@@ -563,6 +643,14 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 }
                 else
                     $rootScope.showMessage("Error: channel not found");
+            }, function(error) {
+                if (error.status == 403)
+                {
+                    $rootScope.getSearchKey(true);
+                    $scope.search(t);
+                }
+                else
+                    $rootScope.showMessage("Error: no internet connection");
             });
         }
     }
