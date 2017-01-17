@@ -645,7 +645,12 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     
     // share on Twitter
     $scope.shareOnTwitter = function(channel, imagePath) {
-        $cordovaSocialSharing.shareViaTwitter("View " + channel.channelTitle + "'s live subscriber count on the Livecounts app!", imagePath, null).then(function(result) {
+        var appLink;
+        if (window.cordova && cordova.platformId == "ios")
+            appLink = "https://itunes.apple.com/us/app/livecounts-live-subscriber/id1185151094";
+        else
+            appLink = "https://play.google.com/store/apps/details?id=net.livecounts";
+        $cordovaSocialSharing.shareViaTwitter("View " + channel.channelTitle + "'s live subscriber count on the Livecounts app!", imagePath, appLink).then(function(result) {
             //$rootScope.showMessage("Successfully shared on Twitter");
         }, function(error) {
             $rootScope.showMessage("Error: failed to share on Twitter");
