@@ -16,6 +16,9 @@
 #channelSubs {
     line-height: 1.1em;
 }
+.custom-icon.favorite, .custom-icon.favorite:hover {
+    color: #387ef5 !important;
+}
 @media screen and (orientation: portrait) and (max-height: 840px) {
     .container {
         height: 50% !important;
@@ -62,7 +65,7 @@
 	</ion-nav-buttons>
 	<ion-nav-buttons side="secondary">
 		<button class="button button-icon ion-social-twitter nav-button" ng-click="share(currChannel)"></button>
-        <button class="button button-icon ion-star nav-button" ng-click="newFav(currChannel)"></button>
+        <button class="button button-icon ion-star nav-button custom-icon" ng-class="{ 'favorite': isFav(currChannel) }" ng-click="toggleFav(currChannel)"></button>
     </ion-nav-buttons>
     <ion-content class="has-header text-center" padding="true" scroll="false" ng-click="showBars(true)">
         <div class="container">

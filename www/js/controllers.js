@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-.run(function($rootScope, $state, $http, $ionicLoading) {
+.run(function($rootScope, $state, $http, $ionicLoading, $interval) {
     // globals
     if (window.localStorage.getItem("inAppNotifs"))
     {
@@ -157,6 +157,64 @@ angular.module('app.controllers', [])
             });
         });
     }
+	
+	// delete a favorite
+    $rootScope.deleteFav = function(fav) {
+        // are you sure?
+        /*var confirmDelete = $ionicPopup.confirm({
+            title: "Delete favorite",
+            template: "Are you sure you want to delete this favorite?"
+        });
+        
+        confirmDelete.then(function(res) {
+            if (res)
+            {
+                // stop auto-updating, then delete favorite
+                if (angular.isDefined($rootScope.updaters[fav.channelId]))
+                {
+                    // stop updating
+                    $interval.cancel($rootScope.updaters[fav.channelId]);
+                    $rootScope.updaters[fav.channelId] = undefined;
+                }
+                $rootScope.favs.splice($rootScope.favs.indexOf(fav), 1);
+                window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
+            }
+        });*/
+        
+        // stop auto-updating, deregister notification, then delete favorite
+        if (angular.isDefined($rootScope.updaters[fav.channelId]))
+        {
+            // stop updating
+            $interval.cancel($rootScope.updaters[fav.channelId]);
+            $rootScope.updaters[fav.channelId] = undefined;
+        }
+        // deregister notification if necessary
+        if ($rootScope.notifs.hasOwnProperty(fav.channelId))
+        {
+            if ($rootScope.notifs[fav.channelId].notify || $rootScope.notifs[fav.channelId].notifyClose)
+            {
+                $scope.deregister(fav, $rootScope.notifs[fav.channelId].milestone, $rootScope.notifs[fav.channelId].subsAway).catch(function(error) {
+                    $rootScope.showMessage(error);
+                });
+            }
+            delete $rootScope.notifs[fav.channelId];
+            window.localStorage.setItem("notifs", angular.toJson($rootScope.notifs));
+        }
+        // locate the favorite
+        /*var index = $rootScope.favs.findIndex(function(item) {
+            return fav.channelId == item.channelId;
+        });*/
+        var index = 0;
+        while (index < $rootScope.favs.length && $rootScope.favs[index].channelId != fav.channelId)
+        {
+            index++;
+        }
+        //console.log(index);
+        $rootScope.favs.splice(index, 1);
+        window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
+    }
+    
+    $rootScope.updaters = {};
     
     // count unread notifications
     /*$rootScope.countUnreadNotifs = function() {
@@ -511,24 +569,43 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
         }
     }
     
-    // adds a favorite
-    $scope.newFav = function(channel) {
-        var message;
-        var exists = $rootScope.favs.some(function(item) {
+    // checks if channel is a favorite
+    $scope.isFav = function(channel) {
+        // make sure channel is defined
+        return channel && $rootScope.favs.some(function(item) {
             return channel.channelId == item.channelId;
         });
-        if (!exists)
+    }
+    
+    // adds a favorite
+    $scope.toggleFav = function(channel) {
+        /*var exists = $rootScope.favs.some(function(item) {
+            return channel.channelId == item.channelId;
+        });*/
+        if (!$scope.isFav(channel))
         {
             channel.update = false;
             $rootScope.favs.push(channel);
             window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
-            message = $scope.currChannel.channelTitle + " added to favorites";
+            $rootScope.showMessage(channel.channelTitle + " added to favorites");
         }
         else
         {
-            message = $scope.currChannel.channelTitle + " already in favorites";
+            //message = $scope.currChannel.channelTitle + " already in favorites";
+            // are you sure?
+            var confirmDelete = $ionicPopup.confirm({
+                title: "Delete favorite",
+                template: "Are you sure you want to remove " + channel.channelTitle + " from your favorites?"
+            });
+            
+            confirmDelete.then(function(res) {
+                if (res)
+                {
+                    $rootScope.deleteFav(channel);
+                    $rootScope.showMessage(channel.channelTitle + " removed from favorites");
+                }
+            });
         }
-        $rootScope.showMessage(message);
     }
 	
 	// share
@@ -818,7 +895,7 @@ function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
 function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicModal, $timeout, $interval) {
-    $scope.updaters = {};
+    //console.log("ready");
     
     // update sub counts
 	$scope.$on("$ionicView.enter", function() {
@@ -832,9 +909,9 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
             if (fav.update)
             {
                 // auto-update sub count if not already doing so
-                if (!angular.isDefined($scope.updaters[fav.channelId]))
+                if (!angular.isDefined($rootScope.updaters[fav.channelId]))
                 {
-                    $scope.updaters[fav.channelId] = $interval(function() {
+                    $rootScope.updaters[fav.channelId] = $interval(function() {
                         if ($state.current.name == "tabsController.favorites")
                         {
                             $rootScope.getSubCount(fav.channelId, function(count) {
@@ -853,52 +930,6 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
             //}
 		});
 	});
-	
-	// delete a favorite
-    $scope.deleteFav = function(fav) {
-        // are you sure?
-        /*var confirmDelete = $ionicPopup.confirm({
-            title: "Delete favorite",
-            template: "Are you sure you want to delete this favorite?"
-        });
-        
-        confirmDelete.then(function(res) {
-            if (res)
-            {
-                // stop auto-updating, then delete favorite
-                if (angular.isDefined($scope.updaters[fav.channelId]))
-                {
-                    // stop updating
-                    $interval.cancel($scope.updaters[fav.channelId]);
-                    $scope.updaters[fav.channelId] = undefined;
-                }
-                $rootScope.favs.splice($rootScope.favs.indexOf(fav), 1);
-                window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
-            }
-        });*/
-        
-        // stop auto-updating, deregister notification, then delete favorite
-        if (angular.isDefined($scope.updaters[fav.channelId]))
-        {
-            // stop updating
-            $interval.cancel($scope.updaters[fav.channelId]);
-            $scope.updaters[fav.channelId] = undefined;
-        }
-        // deregister notification if necessary
-        if ($rootScope.notifs.hasOwnProperty(fav.channelId))
-        {
-            if ($rootScope.notifs[fav.channelId].notify || $rootScope.notifs[fav.channelId].notifyClose)
-            {
-                $scope.deregister(fav, $rootScope.notifs[fav.channelId].milestone, $rootScope.notifs[fav.channelId].subsAway).catch(function(error) {
-                    $rootScope.showMessage(error);
-                });
-            }
-            delete $rootScope.notifs[fav.channelId];
-            window.localStorage.setItem("notifs", angular.toJson($rootScope.notifs));
-        }
-        $rootScope.favs.splice($rootScope.favs.indexOf(fav), 1);
-        window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
-    }
 	
 	// move a favorite
 	$scope.moveFav = function(fav, fromIndex, toIndex) {
@@ -1116,7 +1147,7 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
                 fav.subscriberCount = count;
                 window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
             });
-            $scope.updaters[fav.channelId] = $interval(function() {
+            $rootScope.updaters[fav.channelId] = $interval(function() {
                 if ($state.current.name == "tabsController.favorites")
                 {
                     $rootScope.getSubCount(fav.channelId, function(count) {
@@ -1125,11 +1156,11 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
                 }
             }, 2000);
         }
-        else if (angular.isDefined($scope.updaters[fav.channelId]))
+        else if (angular.isDefined($rootScope.updaters[fav.channelId]))
         {
             // stop updating
-            $interval.cancel($scope.updaters[fav.channelId]);
-            $scope.updaters[fav.channelId] = undefined;
+            $interval.cancel($rootScope.updaters[fav.channelId]);
+            $rootScope.updaters[fav.channelId] = undefined;
         }
         window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
     }
