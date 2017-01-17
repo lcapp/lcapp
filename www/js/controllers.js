@@ -116,6 +116,7 @@ angular.module('app.controllers', [])
             url: url + $rootScope.getSubKey()
         }).then(function(response) {
             //console.log(response);
+            //$ionicLoading.hide();
             callback(response.data.items[0].statistics.subscriberCount);
         }, function(error) {
             //console.log(response);
@@ -132,7 +133,7 @@ angular.module('app.controllers', [])
 	
 	// show toast message
 	$rootScope.showMessage = function(message) {
-		$ionicLoading.show({ template: message, noBackdrop: true, duration: 1000 });
+		$ionicLoading.show({ template: message, animation: "fade-in", noBackdrop: true, duration: 1000 });
 	}
     
     // get channel's title and thumbnail
@@ -212,6 +213,16 @@ angular.module('app.controllers', [])
         //console.log(index);
         $rootScope.favs.splice(index, 1);
         window.localStorage.setItem("favs", angular.toJson($rootScope.favs));
+    }
+    
+    // show loading spinner
+    $rootScope.showSpinner = function(message) {
+        $ionicLoading.show({
+            template: "<ion-spinner></ion-spinner><p class='spinnerText'>" + message + "</p>",
+            animation: "fade-in",
+            showBackdrop: false,
+            duration: 10000
+        });
     }
     
     $rootScope.updaters = {};
@@ -310,8 +321,10 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     
     //console.log("controller running");
     
+    // load channel
     $scope.loadChannel = function(id) {
         $rootScope.getNameAndIcon(id).then(function(channel) {
+            $ionicLoading.hide();
             $scope.currChannel = channel;
             //console.log(channel);
             update($scope.currChannel.channelId);
@@ -330,6 +343,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     // load front page channel
     $scope.loadFrontPageChannel = function() {
         getFeatured().then(function(res) {
+            $ionicLoading.hide();
             $scope.currChannel = $scope.featChannel = res;
         }).then(function() {
             //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
@@ -356,12 +370,14 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     
     // get initial channel from URL
     $rootScope.$on("initialChannel", function(event, args) {
+        $rootScope.showSpinner("Loading channel...");
         $scope.loadChannel(args.channelId);
     });
     
     // get front page channel
     if (!$scope.currChannel)
     {
+        $rootScope.showSpinner("Loading channel...");
         $scope.loadFrontPageChannel();
     }
     /*if (window.localStorage.getItem("initialChannel"))
@@ -891,10 +907,10 @@ function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
     }
 }])
    
-.controller('favoritesCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$http', '$ionicPopup', '$ionicModal', '$timeout', '$interval', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('favoritesCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$http', '$ionicPopup', '$ionicModal', '$timeout', '$interval', '$ionicLoading', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicModal, $timeout, $interval) {
+function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicModal, $timeout, $interval, $ionicLoading) {
     //console.log("ready");
     
     // update sub counts
@@ -1051,6 +1067,7 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
         }
         else
         {
+            $rootScope.showSpinner("Saving notification settings...");
             $rootScope.getSubCount(fav.channelId, function(count) {
                 if (data.notify && count >= data.milestone)
                 {
@@ -1085,7 +1102,13 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicPopup, $ionicMo
                                 subsAway: data.subsAway
                             };
                             window.localStorage.setItem("notifs", angular.toJson($rootScope.notifs));
+                            $rootScope.showMessage("Notification settings saved");
                             $scope.modal.remove();
+                        }
+                        else
+                        {
+                            // unsuccessful
+                            $rootScope.showMessage("Error: failed to save notification settings");
                         }
                     }).catch(function(error) {
                         $rootScope.showMessage(error);

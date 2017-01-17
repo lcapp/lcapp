@@ -9731,6 +9731,9 @@ a.button {
   -webkit-transition-duration: 0s;
   transition-duration: 0s; }
 
+.spinnerText {
+  margin: 0px; }
+
 #page2 .scroll-content {
   width: 100% !important; }
   #page2 .scroll-content .container {
