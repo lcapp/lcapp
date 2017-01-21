@@ -134,6 +134,33 @@ angular.module('app', ['ionic', 'ionic.service.core', 'app.controllers', 'app.ro
               // save `registrationId` somewhere;
             })
           });*/
+    
+        // set up widget
+        /*if (window.ace && ace.platform == "Android") {
+          setupWidget();
+        }
+
+        function setupWidget() {
+          // Handle the app being resumed by a widget click:
+          ace.addEventListener("android.intentchanged", checkForWidgetActivation);
+
+          ace.android.appWidget.clear();
+          
+          for (var i = 0; i < 10; i++) {
+            ace.android.appWidget.add("Item with index " + i);
+          }
+        }
+        
+        function checkForWidgetActivation() {
+          if (ace.platform != "Android") {
+            return;
+          }
+
+          ace.android.getIntent().invoke("getIntExtra", "widgetSelectionIndex", -1, function (value) {
+            // value is the index of the item clicked
+            // or -1 if no item has been clicked
+          });
+        }*/
 	}
     
     /*window.onerror = function(msg, url, linenumber) {

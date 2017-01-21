@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dip"
+    android:background="#ffffff" >
+
+    <TextView
+        android:id="@+id/subCount"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="3"
+        android:gravity="center"
+        android:text="Loading..."
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="#000000" />
+        
+    <Button
+        android:id="@+id/refresh"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Refresh"
+        android:textSize="15sp"
+        android:textColor="#ffffff"
+        android:background="#4a87ee" />
+
+</LinearLayout>

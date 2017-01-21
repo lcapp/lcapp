@@ -1,0 +1,21 @@
+<ion-view view-title="Search">
+    <ion-nav-bar class="bar-positive">
+    </ion-nav-bar>
+    <ion-content class="padding">
+        <div class="item item-input searchInput">
+            <i class="icon ion-search placeholder-icon"></i>
+            <input type="text" id="queryText" ng-model="searchData.query" placeholder="Enter channel name, ID, or URL" ng-enter="search(searchData.query)">
+            <button class="button button-positive" ng-click="search(searchData.query)">Search</button>
+        </div>
+        <ion-list class=" " id="search-list1">
+            <ion-item class="item item-thumbnail-left" ng-class="{ 'item-dark': settings.nightMode }" ng-repeat="result in searchData.results" ng-click="returnChannel(result.snippet)">
+                <img ng-src="{{ result.snippet.thumbnails.default.url }}">
+                <b>{{ result.snippet.channelTitle }}</b>
+				<br>
+				<ng-pluralize count="result.subscriberCount" when="{'1': '1 subscriber',
+					'other': '{{ result.subscriberCount | number}} subscribers'}"
+				</ng-pluralize>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>
