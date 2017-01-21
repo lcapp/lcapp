@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.net.URLDecoder;
+import java.io.UnsupportedEncodingException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -97,9 +99,15 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
             SharedPreferences prefs = context.getSharedPreferences("prefs", 0);
             String id = prefs.getString("widget" + widgetId + "id", "UC-lHJZR3Gqxm24_Vd_AJ5Yw");
             String name = prefs.getString("widget" + widgetId + "name", "PewDiePie");
+            try {
+                name = URLDecoder.decode(name, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new AssertionError("UTF-8 is unknown");
+            }
             
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
                             R.layout.widget_layout);
+            remoteViews.setTextViewText(R.id.channelTitle, name);
             remoteViews.setTextViewText(R.id.subCount, getSubCount(id));
             //Log.w("Beepo", "widgetId: " + widgetId + ", remoteViews: " + remoteViews);
             AppWidgetManager.getInstance(context).updateAppWidget(
@@ -109,12 +117,18 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
         private static void updateSubCount(Context context, int widgetId, RemoteViews remoteViews)
         {
             //Log.w("Hoyeah", "2nd updateSubCount called on " + widgetId);
-            Log.w("Beepo", "context: " + context.toString() + ", widgetId: " + widgetId);
+            //Log.w("Beepo", "context: " + context.toString() + ", widgetId: " + widgetId);
             SharedPreferences prefs = context.getSharedPreferences("prefs", 0);
             String id = prefs.getString("widget" + widgetId + "id", "UC-lHJZR3Gqxm24_Vd_AJ5Yw");
             String name = prefs.getString("widget" + widgetId + "name", "PewDiePie");
+            try {
+                name = URLDecoder.decode(name, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new AssertionError("UTF-8 is unknown");
+            }
             //Log.w("Beepo", "id: " + id + ", name: " + name + ", widgetId: " + widgetId);
             
+            remoteViews.setTextViewText(R.id.channelTitle, name);
             remoteViews.setTextViewText(R.id.subCount, getSubCount(id));
             //Log.w("Beepo", "widgetId: " + widgetId + ", remoteViews: " + remoteViews);
             AppWidgetManager.getInstance(context).updateAppWidget(

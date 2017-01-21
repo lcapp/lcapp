@@ -5,17 +5,35 @@
     android:layout_height="match_parent"
     android:layout_margin="8dip"
     android:background="#ffffff" >
-
-    <TextView
-        android:id="@+id/subCount"
+    
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="3"
-        android:gravity="center"
-        android:text="Loading..."
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:textColor="#000000" />
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/channelTitle"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="bottom|center_horizontal"
+            android:text="Loading..."
+            android:textSize="10sp"
+            android:textColor="#444444" />
+
+        <TextView android:layout_alignParentBottom="true"
+            android:id="@+id/subCount"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:gravity="top|center_horizontal"
+            android:text="Loading..."
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
+
+    </LinearLayout>
         
     <Button
         android:id="@+id/refresh"
