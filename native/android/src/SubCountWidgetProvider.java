@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.net.URLDecoder;
 import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -108,7 +109,7 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
                             R.layout.widget_layout);
             remoteViews.setTextViewText(R.id.channelTitle, name);
-            remoteViews.setTextViewText(R.id.subCount, getSubCount(id));
+            remoteViews.setTextViewText(R.id.subCount, NumberFormat.getInstance().format(Integer.parseInt(getSubCount(id))));
             //Log.w("Beepo", "widgetId: " + widgetId + ", remoteViews: " + remoteViews);
             AppWidgetManager.getInstance(context).updateAppWidget(
                 widgetId, remoteViews);
@@ -129,7 +130,7 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
             //Log.w("Beepo", "id: " + id + ", name: " + name + ", widgetId: " + widgetId);
             
             remoteViews.setTextViewText(R.id.channelTitle, name);
-            remoteViews.setTextViewText(R.id.subCount, getSubCount(id));
+            remoteViews.setTextViewText(R.id.subCount, NumberFormat.getInstance().format(Integer.parseInt(getSubCount(id))));
             //Log.w("Beepo", "widgetId: " + widgetId + ", remoteViews: " + remoteViews);
             AppWidgetManager.getInstance(context).updateAppWidget(
                 widgetId, remoteViews);
