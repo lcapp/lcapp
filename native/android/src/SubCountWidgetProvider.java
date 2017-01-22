@@ -183,7 +183,7 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
                 return json.getJSONArray("items").getJSONObject(0).getJSONObject("statistics").getString("subscriberCount");
                 //return "Success";
             } catch (Exception e) {
-                return "Failed";
+                return "0";
                 //return e.getClass().getCanonicalName();
                 //return e.getMessage();
             }
