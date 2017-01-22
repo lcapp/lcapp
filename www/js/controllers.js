@@ -933,6 +933,22 @@ function ($scope, $stateParams, $rootScope) {
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
 function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
+    // open Livecounts giveaway page
+    $scope.openGiveawayPage = function(id) {
+        if (window.cordova)
+        {
+            cordova.InAppBrowser.open('https://livecounts.net/giveaway/', '_system', 'location=no');
+        }
+    }
+    
+    // open Livecounts auction page
+    $scope.openAuctionPage = function(id) {
+        if (window.cordova)
+        {
+            cordova.InAppBrowser.open('https://livecounts.net/auction/', '_system', 'location=no');
+        }
+    }
+    
     // open Livecounts Twitter account
     $scope.openLCTwitter = function() {
         if (window.cordova)
@@ -1263,10 +1279,10 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicLoading) {
     }
 }])*/
    
-.controller('notificationsCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$http', '$ionicLoading', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('notificationsCtrl', ['$scope', '$stateParams', '$rootScope', '$state', '$http', '$ionicLoading', '$ionicPopup', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $rootScope, $state, $http, $ionicLoading) {
+function ($scope, $stateParams, $rootScope, $state, $http, $ionicLoading, $ionicPopup) {
     // mark notification as read and go to channel
     $scope.readNotif = function(notif) {
         if (!notif.read)
@@ -1289,5 +1305,25 @@ function ($scope, $stateParams, $rootScope, $state, $http, $ionicLoading) {
         }
         $rootScope.inAppNotifs.splice($rootScope.inAppNotifs.indexOf(notif), 1);
         window.localStorage.setItem("inAppNotifs", angular.toJson($rootScope.inAppNotifs));
+    }
+    
+    // clear all notifications
+    $scope.clearNotifs = function() {
+        // are you sure?
+        var confirmDelete = $ionicPopup.confirm({
+            title: "Clear notifications",
+            template: "Are you sure you clear all notifications?"
+        });
+        
+        confirmDelete.then(function(res) {
+            if (res)
+            {
+                $rootScope.unreadNotifs = 0;
+                window.localStorage.setItem("unreadNotifs", $rootScope.unreadNotifs);
+                $rootScope.inAppNotifs = [];
+                window.localStorage.setItem("inAppNotifs", angular.toJson($rootScope.inAppNotifs));
+                $rootScope.showMessage("Notifications cleared");
+            }
+        });
     }
 }])

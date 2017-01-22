@@ -12,12 +12,21 @@
         <h2 ng-style="settings.nightMode && { 'color': '#fff' }">About</h2>
         <p>This app tells you how many subscribers YouTubers have in real time.</p>
         <p>As you can probably tell, this app is a work in progress. Some features might break. Let me know if you find bugs or if you've got suggestions for improvements or feature requests. Have fun experimenting :)</p>
+        <br>
         <h2 ng-style="settings.nightMode && { 'color': '#fff' }">Features</h2>
         <p><b>Live subscriber count</b>: The most important feature of this app. The count updates every 2 seconds.</p>
         <p><b>Share to Twitter</b>: Share any YouTuber's live subscriber count to Twitter.</p>
         <p><b>Search</b>: Easily search for any YouTube channel. For very small channels, you may have to enter their URLs or channel IDs instead of their names.</p>
         <p><b>Favorites</b>: Save your favorite channels so that you don't have to search for them every time you open the app.</p>
         <p><b>Notifications</b>: Receive push notifications when your favorite YouTuber approaches or reaches a milestone.</p>
+        <p><b>Widget (NEW!)</b>: Check any YouTuber's subscriber count directly from your home screen.</p>
+        <br>
+        <h2 ng-style="settings.nightMode && { 'color': '#fff' }">How to get promoted on the app</h2>
+        <p>There are three main ways to get promoted on the app:</p>
+        <p><b>Giveaway</b> - Around 14 days of every month are up for grabs for anyone, as long as you have a YouTube channel. Simply enter by filling out the form on <a href="#" ng-click="openGiveawayPage()">livecounts.net/giveaway</a>.</p>
+        <p><b>Auction</b> - Around 12 of the remaining days of that month are auctioned off. For more information, check <a href="#" ng-click="openAuctionPage()">livecounts.net/auction</a>.</p>
+        <p><b>Mini-contests</b> - Every month, mini-contests are hosted on Twitter. For information and updates, please follow <a href="#" ng-click="openLCTwitter()">@LivecountsSite</a>.</p>
+        <br>
         <h2 ng-style="settings.nightMode && { 'color': '#fff' }">Contact me</h2>
         <div>Twitter (much preferred): <a href="#" ng-click="openLCTwitter()">@LivecountsSite</a></div>
         <div>Email: <a href="#" ng-click="emailToLC()">livecountssite@gmail.com</a></div>

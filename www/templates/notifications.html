@@ -65,6 +65,11 @@ div.scroll.padding {
 			<span ng-hide="data.toggle">Edit</span><span ng-show="data.toggle">Done</span>
 		</button>
 	</ion-nav-buttons-->
+    <ion-nav-buttons side="right">
+		<button class="button button-clear button-positive" ng-click="clearNotifs()">
+			<span>Clear</span>
+		</button>
+	</ion-nav-buttons>
     <ion-content class="has-header" padding="true">
         <ion-list class=" " id="notifications-list1" show-delete="data.toggle">
             <ion-item ng-repeat="notif in inAppNotifs | orderBy:'-'" class="item item-remove-animate" ng-class="{ 'item-dark': settings.nightMode, 'item-thumbnail-left': settings.notifIcons, 'item-unread': !notif.read }" ng-click="readNotif(notif)">
