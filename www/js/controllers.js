@@ -433,6 +433,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     
     // search for YouTube channel and get first result
     $scope.searchChannel = function(t, callback) {
+        $rootScope.showSpinner("Searching...");
         // if query is a channel URL, find the channel ID and go straight to that channel
         if (t.indexOf("youtube.com/") != -1)
         {
@@ -605,6 +606,8 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
             $scope.searchChannel(res, function(success) {
                 if (!success)
                     $rootScope.showMessage("Error: channel not found");
+                else
+                    $ionicLoading.hide();
             });
         }
     }
@@ -694,6 +697,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
         {
             cordova.plugins.Keyboard.close();
         }
+        $rootScope.showSpinner("Searching...");
         // if query is a channel URL, find the channel ID and go straight to that channel
         if (t.indexOf("youtube.com/") != -1)
         {
@@ -710,6 +714,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 else
                 {
                     $rootScope.getNameAndIcon(data.results.meta[0].content).then(function(channel) {
+                        $ionicLoading.hide();
                         $rootScope.goToChannel(channel);
                         $scope.modal.hide();
                     }, function(error) {
@@ -730,6 +735,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
         {
             //console.log("it's a channel id");
             $rootScope.getNameAndIcon(t).then(function(channel) {
+                $ionicLoading.hide();
                 $rootScope.goToChannel(channel);
                 $scope.modal.hide();
             }, function(error) {
@@ -750,6 +756,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 method: "GET",
                 url: url + $rootScope.getSearchKey()
             }).then(function(response) {
+                $ionicLoading.hide();
                 //$scope.channelId = response.data.items[0].snippet.channelId;
                 //$scope.name = response.data.items[0].snippet.title;
                 //update($scope.channelId);
