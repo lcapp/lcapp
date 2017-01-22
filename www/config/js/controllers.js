@@ -33,6 +33,16 @@ function ($scope, $http, $ionicLoading, $timeout) {
 		$ionicLoading.show({ template: message, animation: "fade-in", noBackdrop: true, duration: 1000 });
 	}
     
+    // show loading spinner
+    $scope.showSpinner = function(message) {
+        $ionicLoading.show({
+            template: "<ion-spinner></ion-spinner><p class='spinnerText'>" + message + "</p>",
+            animation: "fade-in",
+            showBackdrop: false,
+            duration: 10000
+        });
+    }
+    
     // get API key for channel search
     $scope.getSearchKey = (function() {
         var keys = [ "AIzaSyAkedClIJENM-lKk5Hwziprb_E9G5bKopc", "AIzaSyDdck0LEAXOCBVKDpN4ZgxC0Gk6zBedOTM", "AIzaSyBiwDi5co4t3Fopz9oEcfoisthYZz_kivM", "AIzaSyAm3hJqTq1L1wcz-cz_4zLUNs2PD37hLuY", "AIzaSyC_oqi_gbXaI29dkJJMRs0a82OWcl-h3tU" ];
@@ -90,6 +100,7 @@ function ($scope, $http, $ionicLoading, $timeout) {
         {
             cordova.plugins.Keyboard.close();
         }
+        $scope.showSpinner("Searching...");
         // if query is a channel URL, find the channel ID and go straight to that channel
         if (t.indexOf("youtube.com/") != -1)
         {
@@ -146,6 +157,7 @@ function ($scope, $http, $ionicLoading, $timeout) {
                 method: "GET",
                 url: url + $scope.getSearchKey()
             }).then(function(response) {
+                $ionicLoading.hide();
                 //$scope.channelId = response.data.items[0].snippet.channelId;
                 //$scope.name = response.data.items[0].snippet.title;
                 //update($scope.channelId);
