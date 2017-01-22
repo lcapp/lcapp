@@ -593,6 +593,8 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 $scope.searchChannel(res, function(success) {
                     if (!success)
                         $rootScope.showMessage("Error: channel not found");
+                    else
+                        $ionicLoading.hide();
                 });
             }
         });
