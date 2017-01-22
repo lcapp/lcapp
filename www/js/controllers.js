@@ -130,6 +130,30 @@ angular.module('app.controllers', [])
                 $rootScope.showMessage("Error: no Internet connection");
         });
     }
+    
+    // check if subscriber count is hidden
+    $rootScope.isSubCountHidden = function(t, callback) {
+        var e = t.length < 24 ? "forUsername" : "id";
+        url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&" + e + "=" + t + "&fields=items/statistics/hiddenSubscriberCount&key=";
+        $http({
+            method: "GET",
+            url: url + $rootScope.getSubKey()
+        }).then(function(response) {
+            //console.log(response);
+            //$ionicLoading.hide();
+            callback(response.data.items[0].statistics.hiddenSubscriberCount);
+        }, function(error) {
+            //console.log(response);
+            if (error.status == 403)
+            {
+                // API quota exceeded
+                $rootScope.getSubKey(true);
+                $rootScope.isSubCountHidden(t, callback);
+            }
+            else
+                $rootScope.showMessage("Error: no Internet connection");
+        });
+    }
 	
 	// show toast message
 	$rootScope.showMessage = function(message) {
@@ -876,6 +900,11 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
         $scope.currChannel = args;
         if (args.thumbnails)
             $scope.currChannel.thumbnail = args.thumbnails.default.url;
+        $rootScope.isSubCountHidden(args.channelId, function(hidden) {
+            //console.log(hidden);
+            if (hidden)
+                $rootScope.showMessage("Error: subscriber count is hidden");
+        });
         //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
         update(args.channelId);
     });
