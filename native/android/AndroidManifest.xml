@@ -40,14 +40,12 @@
             </intent-filter>
         </service>
         <service android:exported="false" android:name="com.adobe.phonegap.push.RegistrationIntentService" />
-        <activity android:name="run.ace.AceActivity" xmlns:android="http://schemas.android.com/apk/res/android" />
         <receiver android:label="Livecounts" android:name="net.livecounts.SubCountWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
         </receiver>
-        <service android:exported="false" android:name="run.ace.AppWidgetService" android:permission="android.permission.BIND_REMOTEVIEWS" />
         <activity android:name="net.livecounts.SubCountWidgetConfigure" android:theme="@android:style/Theme.Black.NoTitleBar">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
