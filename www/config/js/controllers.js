@@ -93,6 +93,30 @@ function ($scope, $http, $ionicLoading, $timeout) {
         });
     }
     
+    // get channel's title
+    $scope.getNameAndIcon = function(id) {
+        //$scope.showMessage("id: " + id);
+        return new Promise(function(resolve, reject) {
+            url = "https://www.googleapis.com/youtube/v3/channels?part=snippet&id=" + id + "&type=channel&fields=items/snippet&key=";
+            $http({
+                method: "GET",
+                url: url + $scope.getSearchKey()
+            }).then(function(response) {
+                if (response.data.items.length > 0)
+                {
+                    resolve({ channelId: id, channelTitle: response.data.items[0].snippet.title, thumbnail: response.data.items[0].snippet.thumbnails.default.url})
+                }
+                else
+                {
+                    reject(new Error("channel not found"));
+                }
+            }, function(error) {
+                //reject(new Error("there's something wrong with the YouTube Data API"));
+                reject(error);
+            });
+        });
+    }
+    
     // search for a channel
     $scope.search = function(t) {
         // hide keyboard
@@ -116,9 +140,13 @@ function ($scope, $http, $ionicLoading, $timeout) {
                 }
                 else
                 {
+                    //console.log(data.results.meta[0].content);
+                    //$scope.showMessage("Channel: " + data.results.meta[0].content);
                     $scope.getNameAndIcon(data.results.meta[0].content).then(function(channel) {
-                        $scope.goToChannel(channel);
-                        $scope.modal.hide();
+                        /*$scope.goToChannel(channel);
+                        $scope.modal.hide();*/
+                        //$scope.showMessage("id: " + channel.channelId + ", title: " + channel.channelTitle);
+                        $scope.returnChannel(channel);
                     }, function(error) {
                         if (error.status == 403)
                         {
@@ -137,8 +165,9 @@ function ($scope, $http, $ionicLoading, $timeout) {
         {
             //console.log("it's a channel id");
             $scope.getNameAndIcon(t).then(function(channel) {
-                $scope.goToChannel(channel);
-                $scope.modal.hide();
+                /*$scope.goToChannel(channel);
+                $scope.modal.hide();*/
+                $scope.returnChannel(channel);
             }, function(error) {
                 if (error.status == 403)
                 {
