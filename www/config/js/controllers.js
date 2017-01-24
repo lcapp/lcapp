@@ -25,6 +25,7 @@ function ($scope, $http, $ionicLoading, $timeout) {
     $scope.returnChannel = function(channel) {
         //ionic.Platform.exitApp();
         //window.close();
+        //$scope.showSpinner("Loading widget...");
         document.location.href = "done?" + channel.channelId + ";" + channel.channelTitle;
     }
 	

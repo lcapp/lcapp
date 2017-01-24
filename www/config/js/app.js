@@ -23,5 +23,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     controller: 'ConfigCtrl'
   })
 
+  /*.state('done-page', {
+    url: '/done',
+    templateUrl: 'config/templates/done.html',
+    controller: 'ConfigCtrl'
+  })*/
+
   $urlRouterProvider.otherwise('/config');
 });
