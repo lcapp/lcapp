@@ -32,6 +32,7 @@ import android.content.SharedPreferences;
 public class SubCountWidgetProvider extends AppWidgetProvider {
 
         //private static final String ACTION_CLICK = "ACTION_CLICK";
+        public static final String ACTION_UPDATE = "net.livecounts.action.UPDATE";
         private static KeyProvider provider;
         
         public SubCountWidgetProvider() {
@@ -49,6 +50,7 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
         public void onUpdate(Context context, AppWidgetManager appWidgetManager,
                         int[] appWidgetIds) {
 
+                Log.w("Heyhey", "We have an update");
                 // Get all ids
                 //ComponentName thisWidget = new ComponentName(context,
                 //                SubCountWidgetProvider.class);
@@ -70,13 +72,37 @@ public class SubCountWidgetProvider extends AppWidgetProvider {
                 }
         }
         
+        private void onUpdate(Context context) {
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+     
+            ComponentName thisAppWidgetComponentName = new ComponentName(context.getPackageName(),getClass().getName());
+            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidgetComponentName);
+            onUpdate(context, appWidgetManager, appWidgetIds);
+        }
+        
+        @Override
+        public void onEnabled(Context context) {
+            Log.w("Heyhey", "Is this even working?");
+            Util.scheduleUpdate(context);
+        }
+        
+        @Override
+        public void onDisabled(Context context) {
+            Log.w("Heyhey", "How about now?");
+            Util.clearUpdate(context);
+        }
+        
         @Override
         public void onReceive(Context context, Intent intent) {
             //Log.w("Stupid", "onReceive called");
             //Log.w("Hoyeah", "Action: " + intent.getAction());
             //Log.w("Hoyeah", "Context: " + context.toString());
             //AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            if (intent.getAction() == null) {
+            if (ACTION_UPDATE.equals(intent.getAction())) {
+                Log.w("Heyhey", "Periodic update");
+                onUpdate(context);
+            }
+            else if (intent.getAction() == null) {
                 Bundle extras = intent.getExtras();
                 if (extras != null) {
                     int widgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
