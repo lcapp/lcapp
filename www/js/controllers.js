@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-.run(function($rootScope, $state, $http, $ionicLoading, $interval, $cordovaNativeStorage) {
+.run(function($rootScope, $state, $http, $ionicLoading, $interval) {
     // globals
     if (window.localStorage.getItem("inAppNotifs"))
     {
@@ -61,19 +61,9 @@ angular.module('app.controllers', [])
             notifIcons: false,
             transition: true,
             livecountsIcon: true,
-            viewButton: true,
-            widgetUpdateFreq: "60"
+            viewButton: true
 		};
         window.localStorage.setItem("settings", angular.toJson($rootScope.settings));
-    }
-    if (window.cordova)
-    {
-        $cordovaNativeStorage.getItem("interval").then(function(value) {
-            //console.log(value);
-            $rootScope.settings.widgetUpdateFreq = value;
-        }, function(error) {
-            //console.log(error);
-        });
     }
     if (window.localStorage.getItem("notifs"))
     {
@@ -383,7 +373,6 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
             //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
             update($scope.currChannel.channelId);
         }).catch(function(err) {
-            //console.log(err);
             if (err.status == 404)
             {
                 $scope.currChannel = {
@@ -792,7 +781,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                     $scope.search(t);
                 }
                 else
-                    $rootScope.showMessage("Error: no Internet connection");
+                    $rootScope.showMessage("Error: no internet connection");
             });
         }
     }
@@ -937,29 +926,13 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     });
 }])
    
-.controller('settingsCtrl', ['$scope', '$stateParams', '$rootScope', '$cordovaNativeStorage', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('settingsCtrl', ['$scope', '$stateParams', '$rootScope', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $rootScope, $cordovaNativeStorage) {
+function ($scope, $stateParams, $rootScope) {
 	// save settings
 	$scope.saveSettings = function() {
-        //console.log($rootScope.settings);
 		window.localStorage.setItem("settings", angular.toJson($rootScope.settings));
-        if (window.cordova)
-        {
-            $cordovaNativeStorage.setItem("interval", parseInt($rootScope.settings.widgetUpdateFreq, 10)).then(function(value) {
-                //console.log(value);
-                $rootScope.showMessage("Successfully saved interval " + value + " seconds");
-                $cordovaNativeStorage.setItem("update", true).then(function(value) {
-                    //console.log(value);
-                }, function(error) {
-                    //console.log(error);
-                });
-            }, function(error) {
-                //console.log(error);
-                $rootScope.showMessage("Failed to save interval");
-            });
-        }
 	}
 }])
    
@@ -988,14 +961,6 @@ function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
         if (window.cordova)
         {
             cordova.InAppBrowser.open('https://twitter.com/LivecountsSite', '_system', 'location=no');
-        }
-    }
-    
-    // open Livecounts privacy policy
-    $scope.openPrivacyPolicy = function() {
-        if (window.cordova)
-        {
-            cordova.InAppBrowser.open('https://livecounts.net/privacy/', '_system', 'location=no');
         }
     }
     
