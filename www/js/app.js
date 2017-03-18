@@ -6,7 +6,7 @@
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
 
-angular.module('app', ['ionic', 'ionic.service.core', 'app.controllers', 'app.routes', 'app.directives','app.services', 'ui.odometer', 'ngCordova'])
+angular.module('app', ['ionic', 'ionic.service.core', 'app.controllers', 'app.routes', 'app.directives','app.services', 'ui.odometer', 'ngCordova', 'ngCordova.plugins.nativeStorage'])
 
 .config([
     '$compileProvider',

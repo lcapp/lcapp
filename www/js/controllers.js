@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-.run(function($rootScope, $state, $http, $ionicLoading, $interval) {
+.run(function($rootScope, $state, $http, $ionicLoading, $interval, $cordovaNativeStorage) {
     // globals
     if (window.localStorage.getItem("inAppNotifs"))
     {
@@ -61,9 +61,19 @@ angular.module('app.controllers', [])
             notifIcons: false,
             transition: true,
             livecountsIcon: true,
-            viewButton: true
+            viewButton: true,
+            widgetUpdateFreq: "60"
 		};
         window.localStorage.setItem("settings", angular.toJson($rootScope.settings));
+    }
+    if (window.cordova)
+    {
+        $cordovaNativeStorage.getItem("interval").then(function(value) {
+            //console.log(value);
+            $rootScope.settings.widgetUpdateFreq = value;
+        }, function(error) {
+            //console.log(error);
+        });
     }
     if (window.localStorage.getItem("notifs"))
     {
@@ -373,6 +383,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
             //window.localStorage.setItem("currChannel", angular.toJson($scope.currChannel));
             update($scope.currChannel.channelId);
         }).catch(function(err) {
+            //console.log(err);
             if (err.status == 404)
             {
                 $scope.currChannel = {
@@ -781,7 +792,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                     $scope.search(t);
                 }
                 else
-                    $rootScope.showMessage("Error: no internet connection");
+                    $rootScope.showMessage("Error: no Internet connection");
             });
         }
     }
@@ -857,14 +868,7 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     // get featured YouTuber
     function getFeatured() {
         return new Promise(function(resolve, reject) {
-            var date = new Date();
-            var url = "https://livecounts.net/featured/" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate() + "-" + date.getUTCFullYear() % 100;
-            //console.log(url);
-            $http({
-                method: "GET",
-                url: url + ".txt"
-            }).then(function(response) {
-                //console.log(response);
+            getFeaturedFile().then(function(response) {
                 var t = response.data;
                 var e = t.indexOf("\n");
                 var id = t.slice(0, 24);
@@ -875,32 +879,46 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
                 }).catch(function(err) {
                     reject(err);
                 });
+            }).catch(function(err) {
+                reject(err);
+            });
+        });
+    }
+    
+    // get file containing featured YouTuber
+    function getFeaturedFile() {
+        return new Promise(function(resolve, reject) {
+            //console.log("searching");
+            var date = new Date();
+            var currHour = date.getUTCHours() + 1;
+            var url = "https://livecounts.net/featured/" + (date.getUTCMonth() + 1) + "-" + date.getUTCDate() + "-" + date.getUTCFullYear() % 100;
+            $http({
+                method: "GET",
+                url: url + ".txt"
+            }).then(function(response) {
+                // found it
+                //console.log("found");
+                resolve(response);
             }, function(response) {
-                // maybe it's a mini-contest day
-                var hour;
-                if (date.getUTCHours() >= 14) {
-                    hour = "-14";
-                } else {
-                    hour = "-0";
-                }
-                $http({
-                    method: "GET",
-                    url: url + hour + ".txt"
-                }).then(function(response) {
-                    //console.log(response);
-                    var t = response.data;
-                    var e = t.indexOf("\n");
-                    var id = t.slice(0, 24);
-                    var description = t.slice(e + 1);
-                    $rootScope.getNameAndIcon(id).then(function(res) {
-                        res.descText = description;
-                        resolve(res);
-                    }).catch(function(err) {
-                        reject(err);
-                    });
-                }, function(response) {
-                    reject(new Error("no channels featured today"));
-                });
+                (function getContents(h) {
+                    if (h < 0) {
+                        // not found after going through all the hours
+                        reject(new Error("no channels featured today"));
+                    }
+                    //console.log("searching for", currHour);
+                    hour = "-" + h;
+                    $http({
+                        method: "GET",
+                        url: url + hour + ".txt"
+                    }).then(function(response) {
+                        // found it
+                        //console.log("found", h);
+                        resolve(response);
+                    }, function(response) {
+                        // not found
+                        getContents(h - 1);
+                    })
+                })(currHour);
             });
         });
     }
@@ -919,13 +937,29 @@ function ($scope, $stateParams, $http, $ionicPopup, $rootScope, $ionicLoading, $
     });
 }])
    
-.controller('settingsCtrl', ['$scope', '$stateParams', '$rootScope', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('settingsCtrl', ['$scope', '$stateParams', '$rootScope', '$cordovaNativeStorage', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $rootScope) {
+function ($scope, $stateParams, $rootScope, $cordovaNativeStorage) {
 	// save settings
 	$scope.saveSettings = function() {
+        //console.log($rootScope.settings);
 		window.localStorage.setItem("settings", angular.toJson($rootScope.settings));
+        if (window.cordova)
+        {
+            $cordovaNativeStorage.setItem("interval", parseInt($rootScope.settings.widgetUpdateFreq, 10)).then(function(value) {
+                //console.log(value);
+                $rootScope.showMessage("Successfully saved interval " + value + " seconds");
+                $cordovaNativeStorage.setItem("update", true).then(function(value) {
+                    //console.log(value);
+                }, function(error) {
+                    //console.log(error);
+                });
+            }, function(error) {
+                //console.log(error);
+                $rootScope.showMessage("Failed to save interval");
+            });
+        }
 	}
 }])
    
@@ -954,6 +988,14 @@ function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
         if (window.cordova)
         {
             cordova.InAppBrowser.open('https://twitter.com/LivecountsSite', '_system', 'location=no');
+        }
+    }
+    
+    // open Livecounts privacy policy
+    $scope.openPrivacyPolicy = function() {
+        if (window.cordova)
+        {
+            cordova.InAppBrowser.open('https://livecounts.net/privacy/', '_system', 'location=no');
         }
     }
     
