@@ -964,6 +964,14 @@ function ($scope, $stateParams, $ionicPlatform, $cordovaAppVersion) {
         }
     }
     
+    // open Livecounts policy policy
+    $scope.openPrivacyPolicy = function() {
+        if (window.cordova)
+        {
+            cordova.InAppBrowser.open('https://livecounts.net/privacy/', '_system', 'location=no');
+        }
+    }
+    
     // email Livecounts
     $scope.emailToLC = function() {
         if (window.cordova)
